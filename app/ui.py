@@ -1,8 +1,9 @@
-"""Layer 5: Streamlit UI. Written for you. Shows the agent's revision trace —
-great for screenshots in your portfolio."""
+"""Layer 5: Streamlit UI. ..."""
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import streamlit as st
 from app.agent import run
-
 st.set_page_config(page_title="JobFit Agent", page_icon="🎯")
 st.title("JobFit Agent — tailored, grounded resume bullets")
 

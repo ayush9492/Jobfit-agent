@@ -6,22 +6,18 @@ to report: average revisions-to-pass, and a manual groundedness spot-check rate.
 
 Loop + reporting written. You implement the groundedness check.
 """
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import json
 from pathlib import Path
 from app.agent import run
-
 TESTS = Path(__file__).parent / "job_descriptions.json"
 
 
+
+
 def is_grounded(bullets, sources):
-    """
-    TODO (you implement):
-    A lightweight automatic check. One reasonable proxy: ensure the agent returned
-    at least one source and that `bullets` is non-empty. For a stronger check, ask
-    the LLM (app.llm.call_llm) to verify each bullet is supported by the experience
-    corpus and return a yes/no. Return True/False.
-    """
-    raise NotImplementedError
+    return bool(bullets and bullets.strip()) and len(sources) > 0
 
 
 def main():

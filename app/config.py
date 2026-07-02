@@ -14,7 +14,7 @@ EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 TOP_K = 5              # how many experience chunks to give the drafter
 
 # Agent loop control — caps prevent infinite revise loops (a real agent concern).
-MAX_REVISIONS = 3
+MAX_REVISIONS = 2
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.2"

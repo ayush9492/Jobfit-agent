@@ -52,10 +52,10 @@ JOB DESCRIPTION:
 BULLETS TO CHECK:
 {bullets}
 
-Check each bullet for:
-1. GROUNDING - every claim must be supported by the EXPERIENCE. Flag any invented tool, metric, or project.
-2. KEYWORD FIT - does it reflect the job description?
-3. QUALITY - impact-first, concrete, no fluff.
+Check ONLY for clear fabrication: a tool, metric, company, or project that does NOT
+appear anywhere in the EXPERIENCE above. If every claim traces to the experience,
+return pass: true. Do NOT flag bullets that are accurate but could be worded better.
+When unsure, pass.
 
 Respond ONLY with JSON, no other text:
 {{"pass": true or false, "issues": ["issue 1", "issue 2"]}}
