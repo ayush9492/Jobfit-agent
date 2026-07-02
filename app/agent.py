@@ -15,45 +15,87 @@ from app.config import TOP_K, MAX_REVISIONS
 
 
 def draft_bullets(job_description, experience_chunks):
-    """
-    TODO (you implement):
-    Prompt the LLM to write 3-4 tailored resume bullets for `job_description`,
-    using ONLY facts present in `experience_chunks`. Return the raw text.
+    context = "\n".join(
+        f"[{i+1}] (source: {c['source']}) {c['text']}"
+        for i, c in enumerate(experience_chunks)
+    )
+    prompt = f"""You are helping tailor resume bullets for a job.
 
-    Build the prompt so it:
-      - lists the retrieved experience chunks as the only allowed source material
-      - tells the model NOT to invent tools, metrics, or projects not in the chunks
-      - asks for impact-first bullets that echo keywords from the job description
-    Hint: format chunks as "[1] (source) text" and instruct "use only [1..N]".
-    """
-    raise NotImplementedError
+EXPERIENCE (the ONLY facts you may use):
+{context}
+
+JOB DESCRIPTION:
+{job_description}
+
+Write 3-4 resume bullets tailored to this job. Rules:
+- Use ONLY facts found in the EXPERIENCE above. Do NOT invent tools, metrics, or projects.
+- Lead with impact/outcome where a metric exists in the experience.
+- Echo relevant keywords from the job description where truthful.
+- One bullet per line, starting with "- ".
+"""
+    return call_llm(prompt)
 
 
 def critique(job_description, bullets, experience_chunks):
-    """
-    TODO (you implement):
-    Ask the LLM to act as a STRICT critic and return JSON like:
-        {"pass": true/false, "issues": ["...", "..."]}
+    context = "\n".join(
+        f"[{i+1}] (source: {c['source']}) {c['text']}"
+        for i, c in enumerate(experience_chunks)
+    )
+    prompt = f"""You are a STRICT resume critic. Check the bullets below.
 
-    The critic checks each bullet for:
-      1. GROUNDING — is every claim supported by the experience chunks? (most important)
-      2. KEYWORD FIT — does it reflect the job description's requirements?
-      3. QUALITY — impact-first, concrete, no fluff.
+EXPERIENCE (the only allowed source of facts):
+{context}
 
-    Parse the JSON safely (strip code fences, json.loads in try/except). On parse
-    failure, treat as not-pass so the agent revises rather than shipping garbage.
-    Return a dict {"pass": bool, "issues": [str]}.
-    """
-    raise NotImplementedError
+JOB DESCRIPTION:
+{job_description}
+
+BULLETS TO CHECK:
+{bullets}
+
+Check each bullet for:
+1. GROUNDING - every claim must be supported by the EXPERIENCE. Flag any invented tool, metric, or project.
+2. KEYWORD FIT - does it reflect the job description?
+3. QUALITY - impact-first, concrete, no fluff.
+
+Respond ONLY with JSON, no other text:
+{{"pass": true or false, "issues": ["issue 1", "issue 2"]}}
+"""
+    raw = call_llm(prompt)
+    import json, re
+    cleaned = re.sub(r"```(json)?", "", raw).strip()
+    try:
+        match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+        result = json.loads(match.group(0)) if match else {}
+        return {"pass": bool(result.get("pass", False)),
+                "issues": result.get("issues", [])}
+    except Exception:
+        return {"pass": False, "issues": ["Could not parse critic response."]}
 
 
 def revise(job_description, bullets, issues, experience_chunks):
-    """
-    TODO (you implement):
-    Prompt the LLM to rewrite `bullets` fixing the critic's `issues`, still grounded
-    ONLY in `experience_chunks`. Return revised text.
-    """
-    raise NotImplementedError
+    context = "\n".join(
+        f"[{i+1}] (source: {c['source']}) {c['text']}"
+        for i, c in enumerate(experience_chunks)
+    )
+    issue_list = "\n".join(f"- {x}" for x in issues)
+    prompt = f"""Revise these resume bullets to fix the listed issues.
+
+EXPERIENCE (the ONLY facts you may use):
+{context}
+
+JOB DESCRIPTION:
+{job_description}
+
+CURRENT BULLETS:
+{bullets}
+
+ISSUES TO FIX:
+{issue_list}
+
+Rewrite the bullets fixing every issue. Use ONLY facts from EXPERIENCE.
+One bullet per line, starting with "- ". Respond with only the bullets.
+"""
+    return call_llm(prompt)
 
 
 def run(job_description, k=TOP_K, max_revisions=MAX_REVISIONS):

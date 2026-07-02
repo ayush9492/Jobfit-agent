@@ -15,18 +15,15 @@ def load_docs():
 
 
 def chunk_text(text, source):
-    """
-    TODO (you implement):
-    Sliding-window chunker. Split `text` into ~CHUNK_SIZE-word chunks with
-    CHUNK_OVERLAP words of overlap. Return list of {"text":..., "source":...}.
-
-    Hints:
-      words = text.split()
-      step = CHUNK_SIZE - CHUNK_OVERLAP
-      for i in range(0, len(words), step): chunk = " ".join(words[i:i+CHUNK_SIZE])
-      skip empty chunks
-    """
-    raise NotImplementedError("Implement chunk_text.")
+    words = text.split()
+    step = CHUNK_SIZE - CHUNK_OVERLAP
+    chunks = []
+    for i in range(0, len(words), step):
+        window = words[i:i + CHUNK_SIZE]
+        chunk = " ".join(window).strip()
+        if chunk:
+            chunks.append({"text": chunk, "source": source})
+    return chunks
 
 
 def build_chunks():

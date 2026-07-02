@@ -17,12 +17,9 @@ def get_model():
 
 
 def embed(texts):
-    """
-    TODO: return (N, D) float32 array of NORMALIZED embeddings for a list of strings.
-    Hint: get_model().encode(texts, normalize_embeddings=True), cast to float32.
-    Why normalized? lets us use inner-product search as cosine similarity.
-    """
-    raise NotImplementedError
+    model = get_model()
+    vecs = model.encode(texts, normalize_embeddings=True)
+    return np.asarray(vecs, dtype="float32")
 
 
 def build_index():
@@ -35,15 +32,11 @@ def build_index():
 
 
 def search(query, k=TOP_K):
-    """
-    TODO: embed query, search FAISS, return top-k chunk dicts (+ score).
-    Hint:
-      chunks = json.loads(CHUNKS_PATH.read_text())
-      index  = faiss.read_index(str(INDEX_PATH))
-      s, idx = index.search(embed([query]), k)
-      return [{**chunks[i], "score": float(sc)} for sc, i in zip(s[0], idx[0])]
-    """
-    raise NotImplementedError
+    chunks = json.loads(CHUNKS_PATH.read_text())
+    index = faiss.read_index(str(INDEX_PATH))
+    qvec = embed([query])
+    scores, idxs = index.search(qvec, k)
+    return [{**chunks[i], "score": float(s)} for s, i in zip(scores[0], idxs[0])]
 
 
 if __name__ == "__main__":
