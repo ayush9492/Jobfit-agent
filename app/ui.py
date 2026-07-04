@@ -48,20 +48,19 @@ if st.button("Tailor & Score") and jd.strip():
     with st.spinner("Extracting keywords and scoring..."):
         keywords = extract_keywords(jd)
         resume_text = resume_to_text()
-        result_score = score(resume_text, keywords)
+        s = score(resume_text, keywords)
 
-    # ---- ATS match score + gap analysis ----
     st.subheader("ATS keyword match")
     c1, c2 = st.columns(2)
-    c1.metric("Resume matches this JD", f"{result_score['score']}%")
-    c2.metric("Keywords in JD", result_score["total"])
+    c1.metric("Your resume matches", f"{s['score']}%")
+    c2.metric("Keywords found in JD", s["total"])
 
-    st.markdown("**✅ Matched:** " + (", ".join(result_score["matched"]) or "—"))
-    st.markdown("**❌ Missing:** " + (", ".join(result_score["missing"]) or "none 🎉"))
-    st.caption("Missing = skills this JD asks for that aren't on your resume. "
-               "If a missing keyword is genuinely true of your experience but worded "
-               "differently, add the JD's exact term to resume_data.py (that honestly "
-               "raises your match). If it's a real gap, it's something to learn — don't fake it.")
+    st.markdown("**✅ You have:** " + (", ".join(s["matched"]) or "—"))
+    st.markdown("**❌ Gaps:** " + (", ".join(s["missing"]) or "none — strong match! 🎉"))
+    st.caption("Gaps are real requirements missing from your resume. If a gap is something "
+               "you've actually done but worded differently, add the JD's exact term to "
+               "resume_data.py — that honestly raises your match. If it's a skill you don't "
+               "have (like TypeScript here), it's a genuine gap to learn, not to fake.")
     # ---- tailored bullets ----
     st.subheader("Tailored bullets")
     for b in bullets:
